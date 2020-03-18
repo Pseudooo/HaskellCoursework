@@ -32,6 +32,7 @@ loop places = do
     putStrLn " q : Quit the application"
     putStrLn " 1 : List All Places"
     putStrLn " 2 : View average rainfall"
+    putStrLn " 3 : Rainfall Table"
     putStrLn "" -- Padding
 
     -- Ask the user for their option
@@ -66,6 +67,8 @@ handle "2" places = do
     case result of
         Nothing -> putStrLn "Invalid Place!"
         Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
+
+handle "3" places = putStrLn $ rainfallTbl places
 
 -- If an invalid option is given
 handle _ _ = putStrLn "Invalid Option!"
