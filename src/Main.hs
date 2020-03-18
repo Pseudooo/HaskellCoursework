@@ -3,6 +3,8 @@ module Main where
 -- Need `hFlush stdout` to handle inputs post compilation
 import System.IO
 
+import Text.Printf
+
 import Coursework
 import Data
 
@@ -15,21 +17,6 @@ main = do
     contents <- readFile "Data.txt"
     let places = map read $ lines contents :: [Place] 
     loop places
-
-loop :: [Place] -> IO ()
-loop places = do
-
-    -- Display possible options
-
-    putStr "Option: " -- Ask for an option
-    hFlush stdout
-    option <- getLine
-
-    -- Make any potential modifications to the data
-    let newData = process places option
-
-    -- Loop round with modified data
-    loop newData
 
 {-
     Loop function will serve to continuously ask the user what they want
@@ -44,6 +31,7 @@ loop places = do
     -- Options that the user can perform
     putStrLn " q : Quit the application"
     putStrLn " 1 : List All Places"
+    putStrLn " 2 : View average rainfall"
     putStrLn "" -- Padding
 
     -- Ask the user for their option
@@ -69,6 +57,15 @@ handle :: String -> [Place] -> IO ()
 handle "1" places = do
     putStrLn "Places:"
     mapM_ putStrLn $ getNames places
+
+handle "2" places = do
+    putStr "Place Name: "
+    hFlush stdout
+    input <- getLine
+    let result = averageRainfall places input
+    case result of
+        Nothing -> putStrLn "Invalid Place!"
+        Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
 
 -- If an invalid option is given
 handle _ _ = putStrLn "Invalid Option!"
