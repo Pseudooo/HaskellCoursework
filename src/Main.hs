@@ -45,19 +45,20 @@ loop places = do
     if input == "q"
         then return ()
         else do -- Otherwise loop
-            handle input places
-            loop places
+            newPlaces <- handle input places
+            loop newPlaces
 
 
 {-
     Function to handle each of the various options
 -}
-handle :: String -> [Place] -> IO ()
+handle :: String -> [Place] -> IO [Place]
 
 -- List all places
 handle "1" places = do
     putStrLn "Places:"
     mapM_ putStrLn $ getNames places
+    pure places
 
 handle "2" places = do
     putStr "Place Name: "
@@ -67,11 +68,17 @@ handle "2" places = do
     case result of
         Nothing -> putStrLn "Invalid Place!"
         Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
+    pure places
 
-handle "3" places = putStrLn $ rainfallTbl places
+
+handle "3" places = do
+    putStrLn $ rainfallTbl places
+    pure places
 
 -- If an invalid option is given
-handle _ _ = putStrLn "Invalid Option!"
+handle _ places = do
+    putStrLn "Invalid Option!"
+    pure places
 
 
 
