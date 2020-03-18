@@ -36,6 +36,13 @@ rainfallTbl (place:places) = padRight 16 name ++ prepRain rain ++ "\n" ++ rainfa
         prepRain [] = "|"
         prepRain (x:xs) = "|" ++ (padLeft 5 $ show x) ++ prepRain xs
 
+{-
+    Question 4:
+    Return a list of places that were dry a given number of days ago
+-}
+dryPlaces :: [Place] -> Int -> [String]
+dryPlaces places n = [name | (name, _, rain) <- places, rain !! n == 0]
+
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
 -- Get the average of a list of numbers
@@ -51,7 +58,7 @@ padLeft :: Int -> String -> String
 padLeft n str
     | n > length str = (prepStr $ n - length str) ++ str 
     | otherwise = str
-    
+
 padRight :: Int -> String -> String
 padRight n str
     | n > length str = str ++ (prepStr $ n - length str)
