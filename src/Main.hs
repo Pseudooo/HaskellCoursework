@@ -4,6 +4,7 @@ module Main where
 import System.IO
 
 import Text.Printf
+import Text.Read
 
 import Coursework
 import Data
@@ -33,6 +34,7 @@ loop places = do
     putStrLn " 1 : List All Places"
     putStrLn " 2 : View average rainfall"
     putStrLn " 3 : Rainfall Table"
+    putStrLn " 4 : Dry Places (Given day)"
     putStrLn "" -- Padding
 
     -- Ask the user for their option
@@ -60,6 +62,7 @@ handle "1" places = do
     mapM_ putStrLn $ getNames places
     pure places
 
+-- Get a place's avg rain
 handle "2" places = do
     putStr "Place Name: "
     hFlush stdout
@@ -70,9 +73,28 @@ handle "2" places = do
         Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
     pure places
 
-
+-- Table of rainfall data
 handle "3" places = do
     putStrLn $ rainfallTbl places
+    pure places
+
+-- Dry places x days ago
+handle "4" places = do
+    -- Ask for days
+    putStr "Days ago: "
+    hFlush stdout
+    input <- getLine
+
+    -- Use of readMaybe to verify parse
+    let result = readMaybe input :: Maybe Int
+    case result of -- Handle invalids
+        Nothing -> putStrLn "Invalid Input!"
+        Just x -> do 
+            if x > 0 && x <= 7 -- Check valid value is given
+                then do
+                    printf "The following were dry %d day(s) ago:\n" x
+                    mapM_ putStrLn $ dryPlaces places (x - 1)
+                else putStrLn "Invalid Value\n0 < x <= 7"
     pure places
 
 -- If an invalid option is given
