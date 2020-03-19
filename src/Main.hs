@@ -35,6 +35,7 @@ loop places = do
     putStrLn " 2 : View average rainfall"
     putStrLn " 3 : Rainfall Table"
     putStrLn " 4 : Dry Places (Given day)"
+    putStrLn " 5 : Update Rainfall Data"
     putStrLn "" -- Padding
 
     -- Ask the user for their option
@@ -93,14 +94,39 @@ handle "4" places = do
             if x > 0 && x <= 7 -- Check valid value is given
                 then do
                     printf "The following were dry %d day(s) ago:\n" x
-                    mapM_ putStrLn $ dryPlaces places (x - 1) -- Shift x for indexing
+                    mapM_ putStr $ dryPlaces places (x - 1) -- Shift x for indexing
                 else putStrLn "Invalid Value\n0 < x <= 7"
     pure places
+
+handle "5" places = do
+    newData <- askData places
+    let newPlaces = updateRecords places newData
+    pure newPlaces
+
 
 -- If an invalid option is given
 handle _ places = do
     putStrLn "Invalid Option!"
     pure places
 
+-- * * * * * * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
+{-
+    Ask data asks the user for a new rainfall value for each record
+-}
+askData :: [Place] -> IO [Int]
+askData [] = return []
+askData (p:ps) = do
+    let (name, _, _) = p 
+        in printf "Rainfall for %s: " name
+    hFlush stdout
+    input <- getLine
+    let val = readMaybe input :: Maybe Int
+    case val of
+        Nothing -> do
+            putStrLn "Invalid Value"
+            askData (p:ps)
 
+        Just x -> do
+            remain <- askData ps
+            pure $ x : remain
