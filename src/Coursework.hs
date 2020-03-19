@@ -32,6 +32,7 @@ rainfallTbl [] = []
 rainfallTbl (place:places) = padRight 16 name ++ prepRain rain ++ "\n" ++ rainfallTbl places
     where 
         (name, _, rain) = place
+        -- Smol helper function to make a nicer table appearance
         prepRain :: [Int] -> String
         prepRain [] = "|"
         prepRain (x:xs) = "|" ++ (padLeft 5 $ show x) ++ prepRain xs
@@ -42,6 +43,15 @@ rainfallTbl (place:places) = padRight 16 name ++ prepRain rain ++ "\n" ++ rainfa
 -}
 dryPlaces :: [Place] -> Int -> [String]
 dryPlaces places n = [name | (name, _, rain) <- places, rain !! n == 0]
+
+{-
+    Question 5:
+    Add a new field for rainfall data to each place, removing the oldest
+-}
+updateRecords :: [Place] -> [Int] -> [Place]
+updateRecords [] _ = []
+updateRecords (p:ps) (x:xs) = let (name, loc, rain) = p
+    in (name, loc, x : init rain) : updateRecords ps xs
 
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
