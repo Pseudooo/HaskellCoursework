@@ -36,6 +36,7 @@ loop places = do
     putStrLn " 3 : Rainfall Table"
     putStrLn " 4 : Dry Places (Given day)"
     putStrLn " 5 : Update Rainfall Data"
+    putStrLn " 6 : Replace place"
     putStrLn "" -- Padding
 
     -- Ask the user for their option
@@ -98,11 +99,26 @@ handle "4" places = do
                 else putStrLn "Invalid Value\n0 < x <= 7"
     pure places
 
+-- Update the rainfall data for each place
 handle "5" places = do
     newData <- askData places
     let newPlaces = updateRecords places newData
     pure newPlaces
 
+handle "6" places = do
+
+    putStr "Place to replace: "
+    hFlush stdout
+    toReplace <- getLine
+
+    if elem toReplace $ getNames places
+        then do
+            newPlace <- askNewPlace
+            pure $ replace places toReplace newPlace
+        
+        else do
+            putStrLn "Invalid Place!"
+            pure places 
 
 -- If an invalid option is given
 handle _ places = do
@@ -130,3 +146,50 @@ askData (p:ps) = do
         Just x -> do
             remain <- askData ps
             pure $ x : remain
+
+askNewPlace :: IO Place
+askNewPlace = do
+
+    putStr "Place Name: "
+    hFlush stdout
+    name <- getLine
+
+    location <- askLocation
+
+    rain <- askRain 7
+
+    let newPlace = (name, location, rain) :: Place
+    pure newPlace
+
+askLocation :: IO (Float, Float)
+askLocation = do
+
+    putStr "Location: "
+    hFlush stdout
+    loc <- getLine -- Collect input
+
+    case readMaybe loc :: Maybe (Float, Float) of
+
+        Nothing -> do
+            putStrLn "Invalid Location!\n"
+            askLocation
+
+        Just x -> pure x
+
+askRain :: Int -> IO [Int]
+askRain 0 = pure []
+askRain n = do
+
+    printf "Raindata for %d day(s) ago: " n
+    hFlush stdout
+    input <- getLine
+
+    case readMaybe input :: Maybe Int of
+
+        Nothing -> do
+            putStrLn "Invalid Value!"
+            askRain n
+
+        Just x -> do
+            rest <- askRain $ n - 1
+            pure $ x : rest
