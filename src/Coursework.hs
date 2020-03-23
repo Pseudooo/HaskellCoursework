@@ -25,7 +25,7 @@ averageRainfall (place:places) toFind
 
 {-
     Question 3:
-    Make a neat string containing each place's rainfall data
+    Make a neat string containing each place 's rainfall data
 -}
 rainfallTbl :: [Place] -> String
 rainfallTbl [] = []
@@ -53,6 +53,17 @@ updateRecords [] _ = []
 updateRecords (p:ps) (x:xs) = let (name, loc, rain) = p
     in (name, loc, x : init rain) : updateRecords ps xs
 
+{-
+    Question 6:
+    Given an existing place, replace it with a new place  
+-}
+replace :: [Place] -> String -> Place -> [Place]
+replace (p:ps) toReplace newPlace
+    | toReplace == name = newPlace : ps
+    | otherwise = p : (replace ps toReplace newPlace)
+    where
+        (name, _, _) = p
+
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
 -- Get the average of a list of numbers
@@ -60,16 +71,16 @@ avg :: (Real a, Fractional b) => [a] -> b
 avg xs = (realToFrac . sum $ xs) / (fromIntegral . length $ xs)
 
 -- Construct a whitespace string of length n
-prepStr :: Int -> String
-prepStr n = [' ' | _ <- [1..n]]
+prepStr :: Char -> Int -> String
+prepStr c n = [c | _ <- [1..n]]
 
 -- Pad a string to a given length and weight it
 padLeft :: Int -> String -> String
 padLeft n str
-    | n > length str = (prepStr $ n - length str) ++ str 
+    | n > length str = (prepStr ' ' $ n - length str) ++ str 
     | otherwise = str
 
 padRight :: Int -> String -> String
 padRight n str
-    | n > length str = str ++ (prepStr $ n - length str)
+    | n > length str = str ++ (prepStr ' ' $ n - length str)
     | otherwise = str
