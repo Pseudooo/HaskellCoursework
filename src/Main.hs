@@ -16,7 +16,9 @@ main :: IO ()
 main = do 
     -- Start with reading & parsing file 
     contents <- readFile "Data.txt"
-    let places = map read $ lines contents :: [Place] 
+    
+    let places = map read $ lines contents :: [Place]
+    putStr $ rainfallTbl $ places
 
     newPlaces <- loop places
 
