@@ -69,13 +69,13 @@ replace (p:ps) toReplace newPlace
     Given a location return the closest place that was dry yesterday
 -}
 closestDry :: [Place] -> (Float, Float) -> Place
-closestDry places fromLoc = foldr1 (closerPlace fromLoc) places
+closestDry places fromLoc = foldr1 (closerPlace fromLoc) [p | p@(_,_,rain) <- places, rain !! 0 == 0]
 
 -- Given two places and a location, return the closer of the two to the given location
 closerPlace :: (Float, Float) -> Place -> Place -> Place
 closerPlace loc p1@(_,loc1,_) p2@(_,loc2,_)
-    | sqrDist loc loc1 > sqrDist loc loc2 = p1
-    | otherwise = p2
+    | sqrDist loc loc1 > sqrDist loc loc2 = p2
+    | otherwise = p1
 
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
