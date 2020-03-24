@@ -17,13 +17,18 @@ main = do
     -- Start with reading & parsing file 
     contents <- readFile "Data.txt"
     let places = map read $ lines contents :: [Place] 
-    loop places
 
+    newPlaces <- loop places
+
+    -- Convert the new data into a string to be written to the file
+    let newData = foldr1 (++) $ map ((++ "\n") . show) newPlaces
+        in writeFile "Data.txt" newData
+ 
 {-
     Loop function will serve to continuously ask the user what they want
     to do until they're done, at which point they're able to quit.
 -}
-loop :: [Place] -> IO ()
+loop :: [Place] -> IO [Place]
 loop places = do
 
     putStrLn "" -- Padding
@@ -37,6 +42,7 @@ loop places = do
     putStrLn " 4 : Dry Places (Given day)"
     putStrLn " 5 : Update Rainfall Data"
     putStrLn " 6 : Replace place"
+    putStrLn " 7 : Closest Dry Place"
     putStrLn "" -- Padding
 
     -- Ask the user for their option
@@ -47,11 +53,10 @@ loop places = do
 
     -- Allow the user to quit the application
     if input == "q"
-        then return ()
-        else do -- Otherwise loop
+        then return places
+        else do
             newPlaces <- handle input places
             loop newPlaces
-
 
 {-
     Function to handle each of the various options
@@ -62,7 +67,7 @@ handle :: String -> [Place] -> IO [Place]
 handle "1" places = do
     putStrLn "Places:"
     mapM_ putStrLn $ getNames places
-    pure places
+    return places
 
 -- Get a place's avg rain
 handle "2" places = do
@@ -73,12 +78,12 @@ handle "2" places = do
     case result of
         Nothing -> putStrLn "Invalid Place!"
         Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
-    pure places
+    return places
 
 -- Table of rainfall data
 handle "3" places = do
     putStrLn $ rainfallTbl places
-    pure places
+    return places
 
 -- Dry places x days ago
 handle "4" places = do
@@ -97,13 +102,13 @@ handle "4" places = do
                     printf "The following were dry %d day(s) ago:\n" x
                     mapM_ putStr $ dryPlaces places (x - 1) -- Shift x for indexing
                 else putStrLn "Invalid Value\n0 < x <= 7"
-    pure places
+    return places
 
--- Update the rainfall data for each place
+-- Update the rainfall data for each place(
 handle "5" places = do
     newData <- askData places
     let newPlaces = updateRecords places newData
-    pure newPlaces
+    return newPlaces
 
 handle "6" places = do
 
@@ -114,16 +119,29 @@ handle "6" places = do
     if elem toReplace $ getNames places
         then do
             newPlace <- askNewPlace
-            pure $ replace places toReplace newPlace
+            return $ replace places toReplace newPlace
         
         else do
             putStrLn "Invalid Place!"
-            pure places 
+            return places
+
+handle "7" places = do
+
+    putStr "Please enter a location: "
+    hFlush stdout
+    input <- getLine
+
+    case readMaybe input :: Maybe (Float, Float) of
+        Nothing -> putStrLn "Invalid Location!"
+        Just loc -> let (name, (long, lat), _) = closestDry places loc
+            in printf "The closest dry place is %s, located at (%.2f, %.2f)\n" name long lat 
+
+    return places
 
 -- If an invalid option is given
 handle _ places = do
     putStrLn "Invalid Option!"
-    pure places
+    return places 
 
 -- * * * * * * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
@@ -180,7 +198,7 @@ askRain :: Int -> IO [Int]
 askRain 0 = pure []
 askRain n = do
 
-    printf "Raindata for %d day(s) ago: " n
+    printf "Rain-data for %d day(s) ago: " n
     hFlush stdout
     input <- getLine
 
