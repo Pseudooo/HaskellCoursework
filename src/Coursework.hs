@@ -64,6 +64,19 @@ replace (p:ps) toReplace newPlace
     where
         (name, _, _) = p
 
+{-
+    Question 7:
+    Given a location return the closest place that was dry yesterday
+-}
+closestDry :: [Place] -> (Float, Float) -> Place
+closestDry places fromLoc = foldr1 (closerPlace fromLoc) places
+
+-- Given two places and a location, return the closer of the two to the given location
+closerPlace :: (Float, Float) -> Place -> Place -> Place
+closerPlace loc p1@(_,loc1,_) p2@(_,loc2,_)
+    | sqrDist loc loc1 > sqrDist loc loc2 = p1
+    | otherwise = p2
+
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS
 
 -- Get the average of a list of numbers
@@ -84,3 +97,6 @@ padRight :: Int -> String -> String
 padRight n str
     | n > length str = str ++ (prepStr ' ' $ n - length str)
     | otherwise = str
+
+sqrDist :: (Float, Float) -> (Float, Float) -> Float
+sqrDist (x1, y1) (x2, y2) = (x1 - x2)^2 + (y1 - y2)^2
