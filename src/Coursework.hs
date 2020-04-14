@@ -6,8 +6,11 @@ type Place = (String, (Float, Float), [Int])
     Question 1:
     Get a list of all the respective place's name
 -}
+-- getNames :: [Place] -> [String]
+-- getNames places = [name | (name, _, _) <- places]
+
 getNames :: [Place] -> [String]
-getNames places = [name | (name, _, _) <- places]
+getNames = map $ \(name, _, _) -> name
 
 {-
     Question 2:
@@ -83,19 +86,15 @@ closerPlace loc p1@(_,loc1,_) p2@(_,loc2,_)
 avg :: (Real a, Fractional b) => [a] -> b
 avg xs = (realToFrac . sum $ xs) / (fromIntegral . length $ xs)
 
--- Construct a whitespace string of length n
-prepStr :: Char -> Int -> String
-prepStr c n = [c | _ <- [1..n]]
-
 -- Pad a string to a given length and weight it
 padLeft :: Int -> String -> String
 padLeft n str
-    | n > length str = (prepStr ' ' $ n - length str) ++ str 
+    | n > length str = (replicate (n - length str) ' ') ++ str 
     | otherwise = str
 
 padRight :: Int -> String -> String
 padRight n str
-    | n > length str = str ++ (prepStr ' ' $ n - length str)
+    | n > length str = str ++ (replicate (n - length str) ' ')
     | otherwise = str
 
 sqrDist :: (Float, Float) -> (Float, Float) -> Float
