@@ -71,8 +71,12 @@ replace (p:ps) toReplace newPlace
     Question 7:
     Given a location return the closest place that was dry yesterday
 -}
-closestDry :: [Place] -> (Float, Float) -> Place
-closestDry places fromLoc = foldr1 (closerPlace fromLoc) [p | p@(_,_,rain) <- places, rain !! 0 == 0]
+closestDry :: [Place] -> (Float, Float) -> Maybe Place
+closestDry places fromLoc
+    | dryYesterday == [] = Nothing
+    | otherwise = Just $ foldr1 (closerPlace fromLoc) dryYesterday
+    where
+        dryYesterday = [p | p@(_,_,rain) <- places, rain !! 0 == 0]
 
 -- Given two places and a location, return the closer of the two to the given location
 closerPlace :: (Float, Float) -> Place -> Place -> Place
