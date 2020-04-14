@@ -52,7 +52,7 @@ loop places = do
     hFlush stdout
     input <- getLine
     putStrLn "" -- Padding
-
+    
     -- Allow the user to quit the application
     if input == "q"
         then return places
@@ -67,15 +67,24 @@ handle :: String -> [Place] -> IO [Place]
 
 -- List all places
 handle "1" places = do
-    putStrLn "Places:"
-    mapM_ putStrLn $ getNames places
+    putStrLn "All Places:"
+
+    -- Associate each place with a number (in order of appearance)
+    let numberedPlaces = zip (getNames places) [1..]
+
+    -- Print the each place appropriately
+    mapM_ putStrLn $ map (\(name, dig)->(show dig ++ ". "  ++ name)) numberedPlaces
     return places
 
 -- Get a place's avg rain
 handle "2" places = do
+
+    -- Get user's input
     putStr "Place Name: "
     hFlush stdout
     input <- getLine
+
+    -- `averageRainfall` will return Maybe Float to determine invalid places
     let result = averageRainfall places input
     case result of
         Nothing -> putStrLn "Invalid Place!"
@@ -212,4 +221,4 @@ askRain n = do
 
         Just x -> do
             rest <- askRain $ n - 1
-            pure $ x : rest
+            return $ x : rest
