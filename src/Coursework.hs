@@ -6,9 +6,6 @@ type Place = (String, (Float, Float), [Int])
     Question 1:
     Get a list of all the respective place's name
 -}
--- getNames :: [Place] -> [String]
--- getNames places = [name | (name, _, _) <- places]
-
 getNames :: [Place] -> [String]
 getNames = map $ \(name, _, _) -> name
 
@@ -73,7 +70,9 @@ replace (p:ps) toReplace newPlace
 -}
 closestDry :: [Place] -> (Float, Float) -> Maybe Place
 closestDry places fromLoc
+    -- Possible there's no dry places yesterday
     | dryYesterday == [] = Nothing
+    -- Find the closest by folding closerPlace over the list
     | otherwise = Just $ foldr1 (closerPlace fromLoc) dryYesterday
     where
         dryYesterday = [p | p@(_,_,rain) <- places, rain !! 0 == 0]
@@ -96,10 +95,12 @@ padLeft n str
     | n > length str = (replicate (n - length str) ' ') ++ str 
     | otherwise = str
 
+-- You get it
 padRight :: Int -> String -> String
 padRight n str
     | n > length str = str ++ (replicate (n - length str) ' ')
     | otherwise = str
 
+-- Find the square of the distance between two points
 sqrDist :: (Float, Float) -> (Float, Float) -> Float
 sqrDist (x1, y1) (x2, y2) = (x1 - x2)^2 + (y1 - y2)^2
