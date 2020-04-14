@@ -87,8 +87,11 @@ handle "2" places = do
     -- `averageRainfall` will return Maybe Float to determine invalid places
     let result = averageRainfall places input
     case result of
+        
         Nothing -> putStrLn "Invalid Place!"
+
         Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
+    
     return places
 
 -- Table of rainfall data
@@ -115,38 +118,55 @@ handle "4" places = do
                 else putStrLn "Invalid Value\n0 < x <= 7"
     return places
 
--- Update the rainfall data for each place(
+-- Update the rainfall data for each place
 handle "5" places = do
     newData <- askData places
     let newPlaces = updateRecords places newData
     return newPlaces
 
+-- Replace a given place with a new place
 handle "6" places = do
 
+    -- Ask for the place to replace
     putStr "Place to replace: "
     hFlush stdout
     toReplace <- getLine
 
+    -- Determine if the place was valid
     if elem toReplace $ getNames places
         then do
+            -- Will ask for a new place and then return new
+            -- Version of the data with the updated place
             newPlace <- askNewPlace
             return $ replace places toReplace newPlace
         
         else do
+            -- Return to main-screen
             putStrLn "Invalid Place!"
             return places
 
+
 handle "7" places = do
 
-    putStr "Please enter a location: "
+    -- Ask for a user input
+    putStr "Please enter a location (x, y): "
     hFlush stdout
     input <- getLine
 
+    -- Attempt to parse the input
     case readMaybe input :: Maybe (Float, Float) of
-        Nothing -> putStrLn "Invalid Location!"
-        Just loc -> let (name, (long, lat), _) = closestDry places loc
-            in printf "The closest dry place is %s, located at (%.2f, %.2f)\n" name long lat 
 
+        Nothing -> putStrLn "Invalid Location!"
+        
+        -- Closest dry returns Nothing for no-dry places
+        Just loc -> case closestDry places loc of
+
+            Nothing -> putStrLn "There were no dry places yesterday!"
+
+            Just (name, (long, lat), _) -> 
+                printf "The closest dry place is %s, located at (%.2f, %.2f)\n"
+                    name long lat
+                    
     return places
 
 -- If an invalid option is given
