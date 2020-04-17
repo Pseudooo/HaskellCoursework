@@ -102,7 +102,7 @@ handle "4" places = do
             if x > 0 && x <= 7 -- Check valid value is given
                 then do
                     printf "The following were dry %d day(s) ago:\n" x
-                    mapM_ putStr $ dryPlaces places (x - 1) -- Shift x for indexing
+                    mapM_ putStrLn $ dryPlaces places (x - 1) -- Shift x for indexing
                 else putStrLn "Invalid Value\n0 < x <= 7"
     return places
 

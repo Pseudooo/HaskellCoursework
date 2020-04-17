@@ -60,7 +60,7 @@ updateRecords (p:ps) (x:xs) = let (name, loc, rain) = p
 replace :: [Place] -> String -> Place -> [Place]
 replace (p:ps) toReplace newPlace
     | toReplace == name = newPlace : ps
-    | otherwise = p : (replace ps toReplace newPlace)
+    | otherwise = p : replace ps toReplace newPlace
     where
         (name, _, _) = p
 
@@ -74,7 +74,7 @@ closestDry places fromLoc = foldr1 (closerPlace fromLoc) [p | p@(_,_,rain) <- pl
 -- Given two places and a location, return the closer of the two to the given location
 closerPlace :: (Float, Float) -> Place -> Place -> Place
 closerPlace loc p1@(_,loc1,_) p2@(_,loc2,_)
-    | sqrDist loc loc1 > sqrDist loc loc2 = p2
+    | let dist = sqrDist loc in dist loc1 > dist loc2 = p2
     | otherwise = p1
 
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS
@@ -85,7 +85,7 @@ avg xs = (realToFrac . sum $ xs) / (fromIntegral . length $ xs)
 
 -- Construct a whitespace string of length n
 prepStr :: Char -> Int -> String
-prepStr c n = [c | _ <- [1..n]]
+prepStr c n = replicate n c
 
 -- Pad a string to a given length and weight it
 padLeft :: Int -> String -> String
