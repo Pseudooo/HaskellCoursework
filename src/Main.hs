@@ -16,8 +16,8 @@ main :: IO ()
 main = do 
     -- Start with reading & parsing file 
     contents <- readFile "Data.txt"
-    
     let places = map read $ lines contents :: [Place]
+    
     putStr $ rainfallTbl $ places
 
     newPlaces <- loop places
@@ -25,7 +25,7 @@ main = do
     -- Convert the new data into a string to be written to the file
     let newData = foldr1 (++) $ map ((++ "\n") . show) newPlaces
         in writeFile "Data.txt" newData
- 
+
 {-
     Loop function will serve to continuously ask the user what they want
     to do until they're done, at which point they're able to quit.
@@ -56,9 +56,8 @@ loop places = do
     -- Allow the user to quit the application
     if input == "q"
         then return places
-        else do
-            newPlaces <- handle input places
-            loop newPlaces
+        else
+            handle input places >>= loop
 
 {-
     Function to handle each of the various options
@@ -67,8 +66,8 @@ handle :: String -> [Place] -> IO [Place]
 
 -- List all places
 handle "1" places = do
-    putStrLn "Places:"
-    mapM_ putStrLn $ getNames places
+    putStrLn "Places:" 
+    mapM_ putStrLn $ getNames places 
     return places
 
 -- Get a place's avg rain
@@ -140,6 +139,10 @@ handle "7" places = do
 
     return places
 
+handle "r" _ = do
+    putStrLn "Resetting place data!"
+    return testData
+
 -- If an invalid option is given
 handle _ places = do
     putStrLn "Invalid Option!"
@@ -191,7 +194,7 @@ askLocation = do
     case readMaybe loc :: Maybe (Float, Float) of
 
         Nothing -> do
-            putStrLn "Invalid Location!\n"
+            putStrLn "Invalid Location!"
             askLocation
 
         Just x -> pure x

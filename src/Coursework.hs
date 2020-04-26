@@ -7,7 +7,7 @@ type Place = (String, (Float, Float), [Int])
     Get a list of all the respective place's name
 -}
 getNames :: [Place] -> [String]
-getNames places = [name | (name, _, _) <- places]
+getNames = map $ \(name, _, _) -> name
 
 {-
     Question 2:
@@ -42,7 +42,7 @@ rainfallTbl (place:places) = padRight 16 name ++ prepRain rain ++ "\n" ++ rainfa
     Return a list of places that were dry a given number of days ago
 -}
 dryPlaces :: [Place] -> Int -> [String]
-dryPlaces places n = [name | (name, _, rain) <- places, rain !! n == 0]
+dryPlaces places n = getNames $ filter (\(_, _, rain) -> rain !! n == 0) places
 
 {-
     Question 5:
