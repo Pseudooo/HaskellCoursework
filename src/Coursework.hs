@@ -11,13 +11,13 @@ getNames = map $ \(name, _, _) -> name
 
 {-
     Question 2:
-    Given the name of a place calculate its average rainfall
+    Given the name of a place calculate its average rainfal
 -}
-averageRainfall :: [Place] -> String -> Maybe Float
-averageRainfall [] _ = Nothing -- Invalid name provided
+averageRainfall :: [Place] -> String -> Float
+averageRainfall [] _ = -1 -- Invalid name provided
 averageRainfall (place:places) toFind
     -- Found place
-    | toFind == name = Just $ avg rain
+    | toFind == name = avg rain
     -- Keep looking
     | otherwise = averageRainfall places toFind
     where

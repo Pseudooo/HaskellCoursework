@@ -67,7 +67,7 @@ handle :: String -> [Place] -> IO [Place]
 -- List all places
 handle "1" places = do
     putStrLn "Places:" 
-    mapM_ putStrLn $ getNames places 
+    putStrLn $ foldr1 (\x y -> (x ++ ", " ++ y)) (getNames places)
     return places
 
 -- Get a place's avg rain
@@ -77,8 +77,8 @@ handle "2" places = do
     input <- getLine
     let result = averageRainfall places input
     case result of
-        Nothing -> putStrLn "Invalid Place!"
-        Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
+        (-1) -> putStrLn "Invalid Place!"
+        x -> printf "%s's Average Rainfall: %4.2f\n" input x
     return places
 
 -- Table of rainfall data
