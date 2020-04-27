@@ -11,13 +11,13 @@ getNames = map $ \(name, _, _) -> name
 
 {-
     Question 2:
-    Given the name of a place calculate its average rainfall
+    Given the name of a place calculate its average rainfal
 -}
-averageRainfall :: [Place] -> String -> Maybe Float
-averageRainfall [] _ = Nothing -- Invalid name provided
+averageRainfall :: [Place] -> String -> Float
+averageRainfall [] _ = -1 -- Invalid name provided
 averageRainfall (place:places) toFind
     -- Found place
-    | toFind == name = Just $ avg rain
+    | toFind == name = avg rain
     -- Keep looking
     | otherwise = averageRainfall places toFind
     where
@@ -42,7 +42,7 @@ rainfallTbl (place:places) = padRight 16 name ++ prepRain rain ++ "\n" ++ rainfa
     Return a list of places that were dry a given number of days ago
 -}
 dryPlaces :: [Place] -> Int -> [String]
-dryPlaces places n = [name | (name, _, rain) <- places, rain !! n == 0]
+dryPlaces places n = getNames $ filter (\(_, _, rain) -> rain !! n == 0) places
 
 {-
     Question 5:
@@ -60,7 +60,7 @@ updateRecords (p:ps) (x:xs) = let (name, loc, rain) = p
 replace :: [Place] -> String -> Place -> [Place]
 replace (p:ps) toReplace newPlace
     | toReplace == name = newPlace : ps
-    | otherwise = p : (replace ps toReplace newPlace)
+    | otherwise = p : replace ps toReplace newPlace
     where
         (name, _, _) = p
 
@@ -80,7 +80,7 @@ closestDry places fromLoc
 -- Given two places and a location, return the closer of the two to the given location
 closerPlace :: (Float, Float) -> Place -> Place -> Place
 closerPlace loc p1@(_,loc1,_) p2@(_,loc2,_)
-    | sqrDist loc loc1 > sqrDist loc loc2 = p2
+    | let dist = sqrDist loc in dist loc1 > dist loc2 = p2
     | otherwise = p1
 
 -- * * * * * * * * * * * * * * * HELPER FUNCTIONS

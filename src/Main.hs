@@ -16,8 +16,8 @@ main :: IO ()
 main = do 
     -- Start with reading & parsing file 
     contents <- readFile "Data.txt"
-    
     let places = map read $ lines contents :: [Place]
+    
     putStr $ rainfallTbl $ places
 
     newPlaces <- loop places
@@ -25,7 +25,7 @@ main = do
     -- Convert the new data into a string to be written to the file
     let newData = foldr1 (++) $ map ((++ "\n") . show) newPlaces
         in writeFile "Data.txt" newData
- 
+
 {-
     Loop function will serve to continuously ask the user what they want
     to do until they're done, at which point they're able to quit.
@@ -56,9 +56,8 @@ loop places = do
     -- Allow the user to quit the application
     if input == "q"
         then return places
-        else do
-            newPlaces <- handle input places
-            loop newPlaces
+        else
+            handle input places >>= loop
 
 {-
     Function to handle each of the various options
@@ -67,13 +66,8 @@ handle :: String -> [Place] -> IO [Place]
 
 -- List all places
 handle "1" places = do
-    putStrLn "All Places:"
-
-    -- Associate each place with a number (in order of appearance)
-    let numberedPlaces = zip (getNames places) [1..]
-
-    -- Print the each place appropriately
-    mapM_ putStrLn $ map (\(name, dig)->(show dig ++ ". "  ++ name)) numberedPlaces
+    putStrLn "Places:" 
+    putStrLn $ foldr1 (\x y -> (x ++ ", " ++ y)) (getNames places)
     return places
 
 -- Get a place's avg rain
@@ -87,11 +81,8 @@ handle "2" places = do
     -- `averageRainfall` will return Maybe Float to determine invalid places
     let result = averageRainfall places input
     case result of
-        
-        Nothing -> putStrLn "Invalid Place!"
-
-        Just x -> printf "%s's Average Rainfall: %4.2f\n" input x
-    
+        (-1) -> putStrLn "Invalid Place!"
+        x -> printf "%s's Average Rainfall: %4.2f\n" input x
     return places
 
 -- Table of rainfall data
@@ -114,7 +105,7 @@ handle "4" places = do
             if x > 0 && x <= 7 -- Check valid value is given
                 then do
                     printf "The following were dry %d day(s) ago:\n" x
-                    mapM_ putStr $ dryPlaces places (x - 1) -- Shift x for indexing
+                    mapM_ putStrLn $ dryPlaces places (x - 1) -- Shift x for indexing
                 else putStrLn "Invalid Value\n0 < x <= 7"
     return places
 
@@ -169,6 +160,10 @@ handle "7" places = do
                     
     return places
 
+handle "r" _ = do
+    putStrLn "Resetting place data!"
+    return testData
+
 -- If an invalid option is given
 handle _ places = do
     putStrLn "Invalid Option!"
@@ -220,7 +215,7 @@ askLocation = do
     case readMaybe loc :: Maybe (Float, Float) of
 
         Nothing -> do
-            putStrLn "Invalid Location!\n"
+            putStrLn "Invalid Location!"
             askLocation
 
         Just x -> pure x
