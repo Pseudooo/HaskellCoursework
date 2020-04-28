@@ -8,6 +8,7 @@ import Text.Read
 
 import Coursework
 import Data
+import Demo
 
 {-
     Main function will load the data from the text file
@@ -38,6 +39,8 @@ loop places = do
 
     -- Options that the user can perform
     putStrLn " q : Quit the application"
+    putStrLn " r : Reset the data to the original data set"
+    putStrLn " d : Run an interactive demo"
     putStrLn " 1 : List All Places"
     putStrLn " 2 : View average rainfall"
     putStrLn " 3 : Rainfall Table"
@@ -87,7 +90,7 @@ handle "2" places = do
 
 -- Table of rainfall data
 handle "3" places = do
-    putStrLn $ rainfallTbl places
+    putStr $ rainfallTbl places
     return places
 
 -- Dry places x days ago
@@ -160,9 +163,23 @@ handle "7" places = do
                     
     return places
 
+-- Reset data
 handle "r" _ = do
     putStrLn "Resetting place data!"
     return testData
+
+-- Perform demo utility
+handle "d" places = do
+    clearScreen
+    putStrLn "The following is a interactive utility for the demo"
+    putStrLn "Each \"page\" will be dedicated to each test that's required from the `demo` function"
+    putStrLn "The values of `testData` that will be used for all tests are:"
+    mapM_ (putStrLn . show) testData
+    putStrLn "\nPress Enter to continue..."
+    clearScreen
+    performDemo 1
+    return places
+
 
 -- If an invalid option is given
 handle _ places = do
@@ -237,3 +254,16 @@ askRain n = do
         Just x -> do
             rest <- askRain $ n - 1
             return $ x : rest
+
+performDemo :: Int -> IO ()
+performDemo 8 = return ()
+performDemo n =
+    (putStrLn $ "Demo: " ++ show n) >>
+    demo n >>
+    putStrLn "Press enter to continue..." >>
+    getLine >>
+    clearScreen >>
+    (performDemo $ n + 1)
+
+clearScreen :: IO ()
+clearScreen = putStr "\ESC[2J"
