@@ -18,7 +18,7 @@ demo 1 =
     putStrLn ""
 
 demo 2 = 
-    printf "Average Rainfall in Cardiff: %.2f\n\n" (averageRainfall testData "Cardiff")
+    printf "Average Rainfall in Cardiff: %.2f\n\n" $ averageRainfall testData "Cardiff"
 
 demo 3 = 
     putStrLn "Display a table showing rainfall data\n" >>
@@ -53,10 +53,6 @@ demo 7 =
         Just (name, _, _) -> putStrLn $ name ++ "\n"
 
 -- demo 8 = -- display the rainfall map
-
-
-
-
 
 join :: [String] -> String
 join vals = foldr1 (\x y -> (x ++ ", " ++ y)) vals

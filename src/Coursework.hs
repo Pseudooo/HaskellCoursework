@@ -32,37 +32,38 @@ rainfallTbl [] = []
 rainfallTbl (place:places) = padRight 16 name ++ prepRain rain ++ "\n" ++ rainfallTbl places
     where 
         (name, _, rain) = place
-        -- Smol helper function to make a nicer table appearance
-        prepRain :: [Int] -> String
-        prepRain [] = "|"
-        prepRain (x:xs) = "|" ++ (padLeft 5 $ show x) ++ prepRain xs
+
+-- Prepares the rainfall figures for each row
+prepRain :: [Int] -> String
+prepRain [] = "|"
+prepRain (x:xs) = "|" ++ (padLeft 5 $ show x) ++ prepRain xs
 
 {-
     Question 4:
     Return a list of places that were dry a given number of days ago
 -}
 dryPlaces :: [Place] -> Int -> [String]
-dryPlaces places n = getNames $ filter (\(_, _, rain) -> rain !! n == 0) places
+dryPlaces places n = getNames $ filter (\(_, _, rain) -> rain !! (n - 1) == 0) places
 
 {-
     Question 5:
     Add a new field for rainfall data to each place, removing the oldest
+    (Two given lists are assumed to have the same length)
 -}
 updateRecords :: [Place] -> [Int] -> [Place]
-updateRecords [] _ = []
-updateRecords (p:ps) (x:xs) = let (name, loc, rain) = p
+updateRecords [] _ = [] -- Terminator condition
+updateRecords (p:ps) (x:xs) = let (name, loc, rain) = p -- "unpack" p
     in (name, loc, x : init rain) : updateRecords ps xs
+        -- Place new rain value and construct list as we go 
 
 {-
     Question 6:
     Given an existing place, replace it with a new place  
 -}
 replace :: [Place] -> String -> Place -> [Place]
-replace (p:ps) toReplace newPlace
-    | toReplace == name = newPlace : ps
-    | otherwise = p : replace ps toReplace newPlace
-    where
-        (name, _, _) = p
+replace (p@(name, _, _):ps) toReplace newPlace
+    | toReplace == name = newPlace : ps -- Match found, stop
+    | otherwise = p : replace ps toReplace newPlace -- Search more
 
 {-
     Question 7:
@@ -75,9 +76,11 @@ closestDry places fromLoc
     -- Find the closest by folding closerPlace over the list
     | otherwise = Just $ foldr1 (closerPlace fromLoc) dryYesterday
     where
-        dryYesterday = [p | p@(_,_,rain) <- places, rain !! 0 == 0]
+        -- Pattern match to the first rainfall figure `x`
+        dryYesterday = [p | p@(_,_,(x:_)) <- places, x == 0]
 
 -- Given two places and a location, return the closer of the two to the given location
+-- This is can then be a function (a -> a -> a) we can fold over our input list
 closerPlace :: (Float, Float) -> Place -> Place -> Place
 closerPlace loc p1@(_,loc1,_) p2@(_,loc2,_)
     | let dist = sqrDist loc in dist loc1 > dist loc2 = p2

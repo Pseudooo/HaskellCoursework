@@ -117,7 +117,7 @@ handle "4" places = do
         Just x -> if x < 0 || x > 7
             then putStrLn "Invalid Value!" >> putStrLn "0 < x <= 7"
             else printf "The Following were dry %d day(s) ago:\n" x >>
-                (mapM_ putStrLn $ dryPlaces places $ x - 1)
+                (mapM_ putStrLn $ dryPlaces places x)
 
     return places
 
@@ -154,9 +154,7 @@ handle "7" places = do
         
         -- Closest dry returns Nothing for no-dry places
         Just loc -> case closestDry places loc of
-
             Nothing -> putStrLn "There were no dry places yesterday!"
-
             Just (name, (long, lat), _) -> 
                 printf "The closest dry place is %s, located at (%.2f, %.2f)\n"
                     name long lat
@@ -223,8 +221,7 @@ askNewPlace = do
     location <- askLocation
     rain <- askRain 7
 
-    let newPlace = (name, location, rain) :: Place
-    return newPlace
+    return (name, location, rain)
 
 -- Helper function for asking and validating user input for Location
 askLocation :: IO (Float, Float)
