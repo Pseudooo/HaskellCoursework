@@ -76,7 +76,7 @@ handle "1" places = do
     -- Display places as a numbered list
     let format = \(name, val) -> (show val ++ ". " ++ name)
         in mapM_ (putStrLn . format) $ zip (getNames places) [1..]
-        
+
     return places
 
 -- Get a place's avg rain
@@ -87,11 +87,12 @@ handle "2" places = do
     hFlush stdout
     input <- getLine
 
-    -- `averageRainfall` will return Maybe Float to determine invalid places
+    -- `averageRainfall` will return -1 to indicate invalid name
     let result = averageRainfall places input
     case result of
         (-1) -> putStrLn "Invalid Place!"
         x -> printf "%s's Average Rainfall: %4.2f\n" input x
+
     return places
 
 -- Table of rainfall data
@@ -106,23 +107,24 @@ handle "4" places = do
     hFlush stdout
     input <- getLine
 
-    -- Use of readMaybe to verify parse
-    let result = readMaybe input :: Maybe Int
-    case result of -- Handle invalids
+    -- Validate input
+    case readMaybe input :: Maybe Int of
+
+        -- Invalid
         Nothing -> putStrLn "Invalid Input!"
-        Just x -> do 
-            if x > 0 && x <= 7 -- Check valid value is given
-                then do
-                    printf "The following were dry %d day(s) ago:\n" x
-                    mapM_ putStrLn $ dryPlaces places (x - 1) -- Shift x for indexing
-                else putStrLn "Invalid Value\n0 < x <= 7"
+
+        -- Successful parse
+        Just x -> if x < 0 || x > 7
+            then putStrLn "Invalid Value!" >> putStrLn "0 < x <= 7"
+            else printf "The Following were dry %d day(s) ago:\n" x >>
+                (mapM_ putStrLn $ dryPlaces places $ x - 1)
+
     return places
 
 -- Update the rainfall data for each place
 handle "5" places = do
     newData <- askData places
-    let newPlaces = updateRecords places newData
-    return newPlaces
+    return $ updateRecords places newData
 
 -- Replace a given place with a new place
 handle "6" places = do
@@ -132,18 +134,11 @@ handle "6" places = do
     hFlush stdout
     toReplace <- getLine
 
-    -- Determine if the place was valid
     if elem toReplace $ getNames places
-        then do
-            -- Will ask for a new place and then return new
-            -- Version of the data with the updated place
-            newPlace <- askNewPlace
-            return $ replace places toReplace newPlace
-        
-        else do
-            -- Return to main-screen
-            putStrLn "Invalid Place!"
-            return places
+        -- Return new version with desired changes
+        then askNewPlace >>= return . replace places toReplace
+        -- No changes
+        else putStrLn "Invalid Place!" >> return places
 
 handle "7" places = do
 
