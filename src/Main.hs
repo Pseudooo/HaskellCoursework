@@ -15,8 +15,10 @@ import Demo
 -}
 main :: IO ()
 main = do 
+
     -- Start with reading & parsing file 
-    contents <- readFile "Data.txt"
+    -- (File contains 1 place per line so need to deal with that)
+    contents <- readFile "places.txt"
     let places = map read $ lines contents :: [Place]
     
     putStr $ rainfallTbl $ places
@@ -25,7 +27,7 @@ main = do
 
     -- Convert the new data into a string to be written to the file
     let newData = foldr1 (++) $ map ((++ "\n") . show) newPlaces
-        in writeFile "Data.txt" newData
+        in writeFile "places.txt" newData
 
 {-
     Loop function will serve to continuously ask the user what they want
