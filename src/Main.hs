@@ -71,8 +71,12 @@ handle :: String -> [Place] -> IO [Place]
 
 -- List all places
 handle "1" places = do
-    putStrLn "Places:" 
-    putStrLn $ foldr1 (\x y -> (x ++ ", " ++ y)) (getNames places)
+    putStrLn "Places:"
+
+    -- Display places as a numbered list
+    let format = \(name, val) -> (show val ++ ". " ++ name)
+        in mapM_ (putStrLn . format) $ zip (getNames places) [1..]
+        
     return places
 
 -- Get a place's avg rain
