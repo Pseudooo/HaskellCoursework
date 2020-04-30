@@ -1,6 +1,7 @@
 module Coursework where
 
-type Place = (String, (Float, Float), [Int])
+type Location = (Float, Float)
+type Place = (String, Location, [Int])
 
 {-
     Question 1:
