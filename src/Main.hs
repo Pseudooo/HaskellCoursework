@@ -139,7 +139,6 @@ handle "6" places = do
             putStrLn "Invalid Place!"
             return places
 
-
 handle "7" places = do
 
     -- Ask for a user input
@@ -180,7 +179,6 @@ handle "d" places = do
     performDemo 1
     return places
 
-
 -- If an invalid option is given
 handle _ places = do
     putStrLn "Invalid Option!"
@@ -192,22 +190,27 @@ handle _ places = do
     Ask data asks the user for a new rainfall value for each record
 -}
 askData :: [Place] -> IO [Int]
-askData [] = return []
+askData [] = return [] -- Terminator
 askData (p:ps) = do
+
+    -- Ask for a value given a specific place
     let (name, _, _) = p 
         in printf "Rainfall for %s: " name
     hFlush stdout
     input <- getLine
-    let val = readMaybe input :: Maybe Int
-    case val of
+
+    -- Attempt to parse
+    case readMaybe input :: Maybe Int of
+
+        -- Failed
         Nothing -> do
             putStrLn "Invalid Value"
-            askData (p:ps)
+            askData (p:ps) -- Ask again
 
-        Just x -> do
-            remain <- askData ps
-            pure $ x : remain
+        -- Success
+        Just x -> askData ps >>= (return . (:) x)
 
+-- Helper function to retrieve a validated place
 askNewPlace :: IO Place
 askNewPlace = do
 
@@ -215,46 +218,43 @@ askNewPlace = do
     hFlush stdout
     name <- getLine
 
+    -- Helper functions for validating location and rain data
     location <- askLocation
-
     rain <- askRain 7
 
     let newPlace = (name, location, rain) :: Place
-    pure newPlace
+    return newPlace
 
+-- Helper function for asking and validating user input for Location
 askLocation :: IO (Float, Float)
 askLocation = do
 
+    -- Ask for a location
     putStr "Location: "
     hFlush stdout
     loc <- getLine -- Collect input
 
+    -- Attempt to parse
     case readMaybe loc :: Maybe (Float, Float) of
+        Nothing -> putStrLn "Invalid Location!" >> askLocation
+        Just x -> return x
 
-        Nothing -> do
-            putStrLn "Invalid Location!"
-            askLocation
-
-        Just x -> pure x
-
+-- Ask user for n rainfall values that are validated
 askRain :: Int -> IO [Int]
 askRain 0 = pure []
 askRain n = do
 
+    -- Ask
     printf "Rain-data for %d day(s) ago: " n
     hFlush stdout
     input <- getLine
 
+    -- Attempt parse
     case readMaybe input :: Maybe Int of
+        Nothing -> putStrLn "Invalid Value!" >> askRain n
+        Just x -> askRain (n - 1) >>= (return . (:) x)
 
-        Nothing -> do
-            putStrLn "Invalid Value!"
-            askRain n
-
-        Just x -> do
-            rest <- askRain $ n - 1
-            return $ x : rest
-
+-- Helper function to provide a nice helpful demo utility
 performDemo :: Int -> IO ()
 performDemo 8 = return ()
 performDemo n =
