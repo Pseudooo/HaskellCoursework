@@ -8,14 +8,17 @@ import Text.Read
 
 import Coursework
 import Data
+import Demo
 
 {-
     Main function will load the data from the text file
 -}
 main :: IO ()
 main = do 
+
     -- Start with reading & parsing file 
-    contents <- readFile "Data.txt"
+    -- (File contains 1 place per line so need to deal with that)
+    contents <- readFile "places.txt"
     let places = map read $ lines contents :: [Place]
     
     putStr $ rainfallTbl $ places
@@ -24,7 +27,7 @@ main = do
 
     -- Convert the new data into a string to be written to the file
     let newData = foldr1 (++) $ map ((++ "\n") . show) newPlaces
-        in writeFile "Data.txt" newData
+        in writeFile "places.txt" newData
 
 {-
     Loop function will serve to continuously ask the user what they want
@@ -38,6 +41,8 @@ loop places = do
 
     -- Options that the user can perform
     putStrLn " q : Quit the application"
+    putStrLn " r : Reset the data to the original data set"
+    putStrLn " d : Run an interactive demo"
     putStrLn " 1 : List All Places"
     putStrLn " 2 : View average rainfall"
     putStrLn " 3 : Rainfall Table"
@@ -52,7 +57,7 @@ loop places = do
     hFlush stdout
     input <- getLine
     putStrLn "" -- Padding
-
+    
     -- Allow the user to quit the application
     if input == "q"
         then return places
@@ -66,24 +71,33 @@ handle :: String -> [Place] -> IO [Place]
 
 -- List all places
 handle "1" places = do
-    putStrLn "Places:" 
-    putStrLn $ foldr1 (\x y -> (x ++ ", " ++ y)) (getNames places)
+    putStrLn "Places:"
+
+    -- Display places as a numbered list
+    let format = \(name, val) -> (show val ++ ". " ++ name)
+        in mapM_ (putStrLn . format) $ zip (getNames places) [1..]
+
     return places
 
 -- Get a place's avg rain
 handle "2" places = do
+
+    -- Get user's input
     putStr "Place Name: "
     hFlush stdout
     input <- getLine
+
+    -- `averageRainfall` will return -1 to indicate invalid name
     let result = averageRainfall places input
     case result of
         (-1) -> putStrLn "Invalid Place!"
         x -> printf "%s's Average Rainfall: %4.2f\n" input x
+
     return places
 
 -- Table of rainfall data
 handle "3" places = do
-    putStrLn $ rainfallTbl places
+    putStr $ rainfallTbl places
     return places
 
 -- Dry places x days ago
@@ -93,55 +107,76 @@ handle "4" places = do
     hFlush stdout
     input <- getLine
 
-    -- Use of readMaybe to verify parse
-    let result = readMaybe input :: Maybe Int
-    case result of -- Handle invalids
+    -- Validate input
+    case readMaybe input :: Maybe Int of
+
+        -- Invalid
         Nothing -> putStrLn "Invalid Input!"
-        Just x -> do 
-            if x > 0 && x <= 7 -- Check valid value is given
-                then do
-                    printf "The following were dry %d day(s) ago:\n" x
-                    mapM_ putStrLn $ dryPlaces places (x - 1) -- Shift x for indexing
-                else putStrLn "Invalid Value\n0 < x <= 7"
+
+        -- Successful parse
+        Just x -> if x < 0 || x > 7
+            then putStrLn "Invalid Value!" >> putStrLn "0 < x <= 7"
+            else printf "The Following were dry %d day(s) ago:\n" x >>
+                (mapM_ putStrLn $ dryPlaces places x)
+
     return places
 
--- Update the rainfall data for each place(
+-- Update the rainfall data for each place
 handle "5" places = do
     newData <- askData places
-    let newPlaces = updateRecords places newData
-    return newPlaces
+    return $ updateRecords places newData
 
+-- Replace a given place with a new place
 handle "6" places = do
 
+    -- Ask for the place to replace
     putStr "Place to replace: "
     hFlush stdout
     toReplace <- getLine
 
     if elem toReplace $ getNames places
-        then do
-            newPlace <- askNewPlace
-            return $ replace places toReplace newPlace
-        
-        else do
-            putStrLn "Invalid Place!"
-            return places
+        -- Return new version with desired changes
+        then askNewPlace >>= return . replace places toReplace
+        -- No changes
+        else putStrLn "Invalid Place!" >> return places
 
 handle "7" places = do
 
-    putStr "Please enter a location: "
+    -- Ask for a user input
+    putStr "Please enter a location (x, y): "
     hFlush stdout
     input <- getLine
 
+    -- Attempt to parse the input
     case readMaybe input :: Maybe (Float, Float) of
-        Nothing -> putStrLn "Invalid Location!"
-        Just loc -> let (name, (long, lat), _) = closestDry places loc
-            in printf "The closest dry place is %s, located at (%.2f, %.2f)\n" name long lat 
 
+        Nothing -> putStrLn "Invalid Location!"
+        
+        -- Closest dry returns Nothing for no-dry places
+        Just loc -> case closestDry places loc of
+            Nothing -> putStrLn "There were no dry places yesterday!"
+            Just (name, (long, lat), _) -> 
+                printf "The closest dry place is %s, located at (%.2f, %.2f)\n"
+                    name long lat
+                    
     return places
 
+-- Reset data
 handle "r" _ = do
     putStrLn "Resetting place data!"
     return testData
+
+-- Perform demo utility
+handle "d" places = do
+    clearScreen
+    putStrLn "The following is a interactive utility for the demo"
+    putStrLn "Each \"page\" will be dedicated to each test that's required from the `demo` function"
+    putStrLn "The values of `testData` that will be used for all tests are:"
+    mapM_ (putStrLn . show) testData
+    putStrLn "\nPress Enter to continue..."
+    clearScreen
+    performDemo 1
+    return places
 
 -- If an invalid option is given
 handle _ places = do
@@ -154,22 +189,27 @@ handle _ places = do
     Ask data asks the user for a new rainfall value for each record
 -}
 askData :: [Place] -> IO [Int]
-askData [] = return []
+askData [] = return [] -- Terminator
 askData (p:ps) = do
+
+    -- Ask for a value given a specific place
     let (name, _, _) = p 
         in printf "Rainfall for %s: " name
     hFlush stdout
     input <- getLine
-    let val = readMaybe input :: Maybe Int
-    case val of
+
+    -- Attempt to parse
+    case readMaybe input :: Maybe Int of
+
+        -- Failed
         Nothing -> do
             putStrLn "Invalid Value"
-            askData (p:ps)
+            askData (p:ps) -- Ask again
 
-        Just x -> do
-            remain <- askData ps
-            pure $ x : remain
+        -- Success
+        Just x -> askData ps >>= (return . (:) x)
 
+-- Helper function to retrieve a validated place
 askNewPlace :: IO Place
 askNewPlace = do
 
@@ -177,42 +217,51 @@ askNewPlace = do
     hFlush stdout
     name <- getLine
 
+    -- Helper functions for validating location and rain data
     location <- askLocation
-
     rain <- askRain 7
 
-    let newPlace = (name, location, rain) :: Place
-    pure newPlace
+    return (name, location, rain)
 
+-- Helper function for asking and validating user input for Location
 askLocation :: IO (Float, Float)
 askLocation = do
 
+    -- Ask for a location
     putStr "Location: "
     hFlush stdout
     loc <- getLine -- Collect input
 
+    -- Attempt to parse
     case readMaybe loc :: Maybe (Float, Float) of
+        Nothing -> putStrLn "Invalid Location!" >> askLocation
+        Just x -> return x
 
-        Nothing -> do
-            putStrLn "Invalid Location!"
-            askLocation
-
-        Just x -> pure x
-
+-- Ask user for n rainfall values that are validated
 askRain :: Int -> IO [Int]
 askRain 0 = pure []
 askRain n = do
 
+    -- Ask
     printf "Rain-data for %d day(s) ago: " n
     hFlush stdout
     input <- getLine
 
+    -- Attempt parse
     case readMaybe input :: Maybe Int of
+        Nothing -> putStrLn "Invalid Value!" >> askRain n
+        Just x -> askRain (n - 1) >>= (return . (:) x)
 
-        Nothing -> do
-            putStrLn "Invalid Value!"
-            askRain n
+-- Helper function to provide a nice helpful demo utility
+performDemo :: Int -> IO ()
+performDemo 8 = return ()
+performDemo n =
+    (putStrLn $ "Demo: " ++ show n) >>
+    demo n >>
+    putStrLn "Press enter to continue..." >>
+    getLine >>
+    clearScreen >>
+    (performDemo $ n + 1)
 
-        Just x -> do
-            rest <- askRain $ n - 1
-            pure $ x : rest
+clearScreen :: IO ()
+clearScreen = putStr "\ESC[2J"
