@@ -64,7 +64,7 @@ loop places = do
     if input == "q"
         then return places
         else
-            handle input places >>= loop
+             handle input places >>= loop
 
 {-
     Function to handle each of the various options
@@ -232,7 +232,7 @@ askLocation :: IO (Float, Float)
 askLocation = do
 
     -- Ask for a location
-    putStr "Location: "
+    putStr "Location (x, y): "
     hFlush stdout
     loc <- getLine -- Collect input
 
@@ -258,7 +258,7 @@ askRain n = do
 
 -- Helper function to provide a nice helpful demo utility
 performDemo :: Int -> IO ()
-performDemo 8 = return ()
+performDemo 9 = return ()
 performDemo n =
     (putStrLn $ "Demo: " ++ show n) >>
     demo n >>
