@@ -9,6 +9,7 @@ import Text.Read
 import Coursework
 import Data
 import Demo
+import Rainfallmap
 
 {-
     Main function will load the data from the text file
@@ -43,6 +44,7 @@ loop places = do
     putStrLn " q : Quit the application"
     putStrLn " r : Reset the data to the original data set"
     putStrLn " d : Run an interactive demo"
+    putStrLn " m : Run the rainfall map"
     putStrLn " 1 : List All Places"
     putStrLn " 2 : View average rainfall"
     putStrLn " 3 : Rainfall Table"
@@ -177,6 +179,8 @@ handle "d" places = do
     clearScreen
     performDemo 1
     return places
+
+handle "m" places = putStrLn "Rainfall map:" >> displayLocations places >> return places
 
 -- If an invalid option is given
 handle _ places = do

@@ -6,6 +6,7 @@ module Demo where
 
 import Coursework
 import Data
+import Rainfallmap
 
 import Text.Printf
 
@@ -52,7 +53,7 @@ demo 7 =
         Nothing -> putStrLn "There are no dry places!"
         Just (name, _, _) -> putStrLn $ name ++ "\n"
 
--- demo 8 = -- display the rainfall map
+demo 8 = putStrLn "Rainfall map:" >> displayLocations testData
 
 join :: [String] -> String
 join vals = foldr1 (\x y -> (x ++ ", " ++ y)) vals
